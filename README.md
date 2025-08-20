@@ -126,7 +126,7 @@ Default database config (edit in application.yml if needed):
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/userdb
-    username: user
+    username: permit
     password: password
   jpa:
     hibernate:
