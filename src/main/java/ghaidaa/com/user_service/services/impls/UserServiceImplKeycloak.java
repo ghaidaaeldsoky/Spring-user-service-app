@@ -1,6 +1,8 @@
 package ghaidaa.com.user_service.services.impls;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ghaidaa.com.user_service.dtos.request.UserLoginRequest;
 import ghaidaa.com.user_service.dtos.request.UserRegisterRequest;
 import ghaidaa.com.user_service.dtos.request.UserUpdateRequest;
@@ -9,6 +11,7 @@ import ghaidaa.com.user_service.dtos.response.PageResponse;
 import ghaidaa.com.user_service.dtos.response.UserResponse;
 import ghaidaa.com.user_service.entities.User;
 import ghaidaa.com.user_service.exceptions.DuplicateResourceException;
+import ghaidaa.com.user_service.exceptions.NotFoundException;
 import ghaidaa.com.user_service.mappers.UserMapper;
 import ghaidaa.com.user_service.repos.UserRepo;
 import ghaidaa.com.user_service.services.interfaces.UserService;
@@ -24,6 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -37,6 +44,12 @@ public class UserServiceImplKeycloak implements UserService {
 
     @Value("${keycloak.client-id}")
     private String clientId;
+
+    @Value("${keycloak.server-url}")
+    private String keycloakServerUrl;
+
+    @Value("${keycloak.client-secret}")
+    private String clientSecret;
 
     public UserServiceImplKeycloak(Keycloak keycloak) {
         this.keycloak = keycloak;
@@ -77,7 +90,46 @@ public class UserServiceImplKeycloak implements UserService {
 
     @Override
     public LoginResponse login(UserLoginRequest request) {
-        return null;
+        // 🟢 Call Keycloak token endpoint
+        String tokenUrl = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+
+        try {
+            // Prepare request body
+            String body = "grant_type=password"
+                    + "&client_id=" + clientId
+                    + "&client_secret=" + clientSecret
+                    + "&username=" + request.email()
+                    + "&password=" + request.password();
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(tokenUrl))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Login failed with Keycloak: " + response.body());
+            }
+
+            // Parse Keycloak response
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(response.body());
+
+            String accessToken = jsonNode.get("access_token").asText();
+            String refreshToken = jsonNode.get("refresh_token").asText();
+
+            // 🟢 Get user from DB (to return ID + role)
+            User user = userRepository.findByEmail(request.email())
+                    .orElseThrow(() -> new NotFoundException("Invalid credentials"));
+
+            return new LoginResponse(user.getId(), user.getRole(), accessToken);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error while logging in with Keycloak", e);
+        }
     }
 
     @Override
@@ -146,7 +198,13 @@ public class UserServiceImplKeycloak implements UserService {
         if (response.getStatus() == 201) {
             // Extract user ID from location header
             String location = response.getLocation().getPath();
-            return location.substring(location.lastIndexOf('/') + 1);
+            String userId = location.substring(location.lastIndexOf('/') + 1);
+
+            // ✅ Assign default role USER
+            assignRoleToUser(realmResource, userId, "USER");
+            assignRoleToUser(realmResource, userId, "CITIZEN");
+            return userId;
+
         } else {
             String errorMessage = "Failed to create user in Keycloak: " + response.getStatusInfo();
             if (response.getStatus() == 409) {
@@ -164,5 +222,16 @@ public class UserServiceImplKeycloak implements UserService {
         String[] parts = fullName.split(" ");
         return parts.length > 1 ? parts[parts.length - 1] : "";
     }
+
+    private void assignRoleToUser(RealmResource realmResource, String userId, String roleName) {
+        var role = realmResource.roles().get(roleName).toRepresentation();
+
+        realmResource.users()
+                .get(userId)
+                .roles()
+                .realmLevel()
+                .add(Collections.singletonList(role));
+    }
+
 
 }
