@@ -30,9 +30,9 @@ services:
       - postgres
 
   user-service:
-#    build: .
+    build: .
     container_name: user-service              # stable DNS name
-    image: ghaidaaeldsoky/user-service
+#    image: ghaidaaeldsoky/user-service
     env_file: .env  # Load all variables from .env
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}

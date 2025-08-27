@@ -24,7 +24,6 @@ public class CitizenController {
 
     @Autowired
     private UserService userService;
-
     @Operation(summary = "register new user")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody UserRegisterRequest request) {
@@ -42,6 +41,7 @@ public class CitizenController {
     public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
             @PathVariable UUID id,
             @Valid @RequestBody UserUpdateRequest request) {
+        System.out.println("At controller");
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", userService.updateProfile(id, request)));
     }
 
