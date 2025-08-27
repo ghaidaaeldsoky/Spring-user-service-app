@@ -5,6 +5,7 @@ import ghaidaa.com.user_service.dtos.ApiResponse;
 import ghaidaa.com.user_service.dtos.request.ChangeRoleRequest;
 import ghaidaa.com.user_service.dtos.response.PageResponse;
 import ghaidaa.com.user_service.dtos.response.UserResponse;
+import ghaidaa.com.user_service.services.impls.UserServiceImplKeycloak;
 import ghaidaa.com.user_service.services.interfaces.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,8 +20,12 @@ import java.util.UUID;
 @Tag(name = "Users", description = "Citizin Users management API")
 public class AdminController {
 
-    @Autowired
+//    @Autowired
     private UserService userService;
+
+    public AdminController(UserServiceImplKeycloak userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(

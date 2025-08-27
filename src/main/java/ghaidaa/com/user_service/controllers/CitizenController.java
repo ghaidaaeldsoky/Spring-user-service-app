@@ -6,6 +6,7 @@ import ghaidaa.com.user_service.dtos.request.UserRegisterRequest;
 import ghaidaa.com.user_service.dtos.request.UserUpdateRequest;
 import ghaidaa.com.user_service.dtos.response.LoginResponse;
 import ghaidaa.com.user_service.dtos.response.UserResponse;
+import ghaidaa.com.user_service.services.impls.UserServiceImplKeycloak;
 import ghaidaa.com.user_service.services.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,8 +23,13 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Users", description = "Citizin Users management API")
 public class CitizenController {
 
-    @Autowired
+//    @Autowired
     private UserService userService;
+
+    public CitizenController(UserServiceImplKeycloak userService) {
+        this.userService = userService;
+    }
+
     @Operation(summary = "register new user")
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody UserRegisterRequest request) {
