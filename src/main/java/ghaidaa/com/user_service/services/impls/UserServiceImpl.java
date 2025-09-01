@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -83,6 +84,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId)
                 .map(userMapper::toResponse)
                 .orElseThrow(()-> new NotFoundException("User not Found"));
+    }
+
+    @Override
+    public Optional<UserResponse> findByKeycloakId(UUID keycloakId) {
+        return Optional.empty();
     }
 
 

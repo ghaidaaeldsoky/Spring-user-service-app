@@ -5,6 +5,7 @@ import ghaidaa.com.user_service.dtos.ApiResponse;
 import ghaidaa.com.user_service.dtos.request.ChangeRoleRequest;
 import ghaidaa.com.user_service.dtos.response.PageResponse;
 import ghaidaa.com.user_service.dtos.response.UserResponse;
+import ghaidaa.com.user_service.services.impls.UserServiceImpl;
 import ghaidaa.com.user_service.services.impls.UserServiceImplKeycloak;
 import ghaidaa.com.user_service.services.interfaces.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +24,7 @@ public class AdminController {
 //    @Autowired
     private UserService userService;
 
-    public AdminController(UserServiceImplKeycloak userService) {
+    public AdminController(UserServiceImpl userService) {
         this.userService = userService;
     }
 

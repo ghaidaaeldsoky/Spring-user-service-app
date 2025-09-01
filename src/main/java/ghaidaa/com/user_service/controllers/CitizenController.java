@@ -6,6 +6,7 @@ import ghaidaa.com.user_service.dtos.request.UserRegisterRequest;
 import ghaidaa.com.user_service.dtos.request.UserUpdateRequest;
 import ghaidaa.com.user_service.dtos.response.LoginResponse;
 import ghaidaa.com.user_service.dtos.response.UserResponse;
+import ghaidaa.com.user_service.services.impls.UserServiceImpl;
 import ghaidaa.com.user_service.services.impls.UserServiceImplKeycloak;
 import ghaidaa.com.user_service.services.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,20 +27,8 @@ public class CitizenController {
 //    @Autowired
     private UserService userService;
 
-    public CitizenController(UserServiceImplKeycloak userService) {
+    public CitizenController(UserServiceImpl userService) {
         this.userService = userService;
-    }
-
-    @Operation(summary = "register new user")
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody UserRegisterRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("User registered successfully", userService.register(request)));
-    }
-
-    @Operation(summary = "login")
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody UserLoginRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Login successful", userService.login(request)));
     }
 
     @Operation(summary = "Update User Profile")
