@@ -1,6 +1,8 @@
-target
-.git
+target/
+.git/
 .gitignore
 README.md
 Dockerfile
 .env
+.idea/
+*.iml

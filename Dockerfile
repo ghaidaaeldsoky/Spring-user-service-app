@@ -7,6 +7,7 @@
 FROM maven:3.9.7-eclipse-temurin-17 AS build
 WORKDIR /workspace/app
 COPY pom.xml .
+RUN mvn dependency:go-offline -B
 #RUN mvn -q -DskipTests dependency:go-offline
 COPY src ./src
 RUN mvn -DskipTests package

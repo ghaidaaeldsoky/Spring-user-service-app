@@ -86,12 +86,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()-> new NotFoundException("User not Found"));
     }
 
-    @Override
-    public Optional<UserResponse> findByKeycloakId(UUID keycloakId) {
-        return Optional.empty();
-    }
-
-
     // Admin
     @Override
     public PageResponse<UserResponse> getAllUsers(int page, int size) {
