@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,6 +32,7 @@ public class CitizenController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('CITIZEN')")
     @Operation(summary = "Update User Profile")
     @PutMapping("/profile/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
@@ -40,6 +42,7 @@ public class CitizenController {
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", userService.updateProfile(id, request)));
     }
 
+    @PreAuthorize("hasRole('CITIZEN')")
     @Operation(summary = "Get user profile")
     @GetMapping("/profile/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getProfile(@PathVariable UUID id) {
